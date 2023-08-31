@@ -1,0 +1,50 @@
+version: '3'
+services:
+  # jmeter:
+  #   image: justb4/jmeter:latest
+  #   volumes:
+  #     - ./jmeter-scripts:/jmeter-scripts
+  #   command: -n -t /jmeter-scripts/test.jmx -l /jmeter-scripts/results.jtl -Jbackend.listener=org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient -Jbackend.hostname=influxdb -Jbackend.port=8086 -Jbackend.database=jmeter -Jbackend.user=admin -Jbackend.password=admin
+  #   depends_on:
+  #     - influxdb
+  #   networks:
+  #     - jmg_network
+
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=jmeter
+      - INFLUXDB_USER=admin
+      - INFLUXDB_USER_PASSWORD=admin
+      - INFLUXDB_HTTP_AUTH_ENABLED=true
+      - INFLUXDB_TOKEN=2d1b12ef-6b90-4711-8b4e-b13cde434e02
+    networks:
+      - jmg_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - influxdb
+    networks:
+      - jmg_network
+
+networks:
+  jmg_network:
+    driver: bridge
+
+volumes:
+  influxdb_data:
+  grafana:
